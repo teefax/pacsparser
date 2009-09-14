@@ -1593,8 +1593,7 @@
 51.20.+d Viscosity, diffusion, and thermal conductivity 
 51.30.+i Thermodynamic properties, equations of state (see also 05.70.Ce Thermodynamic functions and equations of state in thermodynamics)
 51.35.+a Mechanical properties; compressibility 
-51.40.+p Acoustical properties (see also 43.28.-g Aeroacoustics and atmospheric sound in Acoustics Appendix; for ultrasonic relaxation in gases, see 43.35.Fj-
-in Acoustics Appendix)
+51.40.+p Acoustical properties (see also 43.28.-g Aeroacoustics and atmospheric sound in Acoustics Appendix; for ultrasonic relaxation in gases, see 43.35.Fj- in Acoustics Appendix)
 51.50.+v Electrical properties (ionization, breakdown, electron and ion mobility, etc.) (see also 52.80.-s Electric discharges in physics of plasmas)
 51.60.+a Magnetic properties 
 51.70.+f Optical and dielectric properties 
