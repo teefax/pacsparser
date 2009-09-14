@@ -80,17 +80,14 @@ class PACSParser
         parent.children[@input[1].to_i] =  PACS.new(current_id, desc)
       else
         if @input[1] == '99'
-          # @container[9] = PACS.new(current_id, desc) if @container[9].nil?
-          # @container[9][:children] ||= []
-          # @container[9][:children][@input[1].to_i] ||= PACS.new()
-          # tl = @container[9][:children][@input[1].to_i]
-          # tl.children = [] if tl.children.nil?
-          # tl.children[@input[2].to_i] =  PACS.new(current_id, desc)
-        else
-          parent = @container[@input[1].to_i/10.round][:children][@input[1].to_i]
-          parent.children = {} if parent.children.nil?
-          parent.children[current_id] =  PACS.new(current_id, desc)
+          @container[9] = PACS.new(current_id, desc) if @container[9].nil?
+          @container[9][:children] ||= {}
+          @container[9][:children][@input[1].to_i] ||= PACS.new()
         end
+        
+        parent = @container[@input[1].to_i/10.round][:children][@input[1].to_i]
+        parent.children ||= {}
+        parent.children[current_id] =  PACS.new(current_id, desc)
       end
       
       
