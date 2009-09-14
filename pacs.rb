@@ -3,6 +3,8 @@
 # parse PACS2008 file and do things with it
 require 'open-uri'
 require "strscan"
+require 'pp'
+require 'yaml'
 
 # PACSFILE = "http://www.aip.org/pacs/pacs08/ASCII2008FullPacs.txt"
 PACSFILE = "ASCII2008FullPacs.txt"
@@ -34,21 +36,22 @@ class PACSParser
         parse_content
       end
     rescue Exception => e
-      puts "Error: #{e} at #{@input.peek(@input.string.length)}"
+      raise
     end
   end
   
   def print
+    # puts @container.to_yaml
     @container.each do |i|
-      print_pacs(i)
+      print_pacs(i) if !i.nil?
     end
   end
   
   def print_pacs(pacs, indent = "")
     puts "#{indent}#{pacs.id} #{pacs.desc}"
     if !pacs.children.nil?
-      pacs.children.each do |c|
-        print_pacs(c, indent+"\t")
+      pacs.children.keys.sort{ |a,b| a.to_s.casecmp(b.to_s) }.each do |k|
+        print_pacs(pacs.children[k], indent+"\t") if !pacs.children[k].nil?
       end
     end
   end
@@ -68,13 +71,26 @@ class PACSParser
       desc = @input[4]
       
       if @input[1].to_i % 10 == 0
-        # if top-level-element
+        # top-level elements
         @container.push PACS.new(current_id, desc)
-        
+      elsif @input[2] == '00'
+        # second level categories
+        parent = @container[@input[1].to_i/10.round]
+        parent.children ||= {}
+        parent.children[@input[1].to_i] =  PACS.new(current_id, desc)
       else
-        tl = @container[@input[1].to_i/10.round]
-        tl.children ||= []
-        tl.children.push PACS.new(current_id, desc)
+        if @input[1] == '99'
+          # @container[9] = PACS.new(current_id, desc) if @container[9].nil?
+          # @container[9][:children] ||= []
+          # @container[9][:children][@input[1].to_i] ||= PACS.new()
+          # tl = @container[9][:children][@input[1].to_i]
+          # tl.children = [] if tl.children.nil?
+          # tl.children[@input[2].to_i] =  PACS.new(current_id, desc)
+        else
+          parent = @container[@input[1].to_i/10.round][:children][@input[1].to_i]
+          parent.children = {} if parent.children.nil?
+          parent.children[current_id] =  PACS.new(current_id, desc)
+        end
       end
       
       
