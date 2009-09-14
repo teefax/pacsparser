@@ -3,7 +3,6 @@
 # parse PACS2008 file and do things with it
 require 'open-uri'
 require "strscan"
-require 'pp'
 require 'yaml'
 
 # PACSFILE = "http://www.aip.org/pacs/pacs08/ASCII2008FullPacs.txt"
@@ -21,6 +20,7 @@ class PACSParser
       f = File.open(PACSFILE,'r')
       @lines = f.read
       f.close
+      # sort, so that the ids are in the right order
       @lines.sort{|a,b| a.casecmp(b)}.to_s
     rescue Exception => e
       puts "Error loading file: #{e}"
