@@ -21,8 +21,7 @@ class PACSParser
       f = File.open(PACSFILE,'r')
       @lines = f.read
       f.close
-      # @lines.sort{|a,b| a.casecmp(b)}.to_s
-      @lines
+      @lines.sort{|a,b| a.casecmp(b)}.to_s
     rescue Exception => e
       puts "Error loading file: #{e}"
     end    
@@ -59,13 +58,13 @@ class PACSParser
   private
   
   def parse_content
-    @current_id = nil
     parse_pacs or
     parse_comment or
     ignore
   end
   
   def parse_pacs
+    # FIXME: this really should be split into subroutines - but I couldn't care less ATM
     if @input.scan(/(\d{2})\.(\d{2}).(..) (.*)\n/)
       current_id = "#{@input[1]}.#{@input[2]}.#{@input[3]}"
       desc = @input[4]
@@ -79,15 +78,39 @@ class PACSParser
         parent.children ||= {}
         parent.children[@input[1].to_i] =  PACS.new(current_id, desc)
       else
+        # third level and below
         if @input[1] == '99'
+          # special handling for errata group (why is this a subgroup?!?? WTF?)
           @container[9] = PACS.new(current_id, desc) if @container[9].nil?
           @container[9][:children] ||= {}
           @container[9][:children][@input[1].to_i] ||= PACS.new()
         end
-        
+
         parent = @container[@input[1].to_i/10.round][:children][@input[1].to_i]
         parent.children ||= {}
         parent.children[current_id] =  PACS.new(current_id, desc)
+        
+        if @input[3].start_with?("-")
+          # start of level 4 group - scan ahead for level 3 ids with uppercase first characters
+          while !@input.eos? and @input.scan(/(\d{2})\.(\d{2}).([A-Z].) (.*)\n/)
+            l4_id = "#{@input[1]}.#{@input[2]}.#{@input[3]}"
+            l4_desc = @input[4]
+            
+            parent.children[current_id].children ||= {}
+            parent.children[current_id].children[l4_id] = PACS.new(l4_id, l4_desc)
+            
+            if @input[3].end_with?("-")
+              # start of a level 5 group
+              while !@input.eos? and @input.scan(/(\d{2})\.(\d{2}).([a-z].) (.*)\n/)
+                l5_id = "#{@input[1]}.#{@input[2]}.#{@input[3]}"
+                l5_desc = @input[4]
+                
+                parent.children[current_id].children[l4_id].children ||= {}
+                parent.children[current_id].children[l4_id].children[l5_id] = PACS.new(l5_id, l5_desc)
+              end
+            end
+          end
+        end
       end
       
       
@@ -135,54 +158,3 @@ end
 p = PACSParser.new
 p.parse(p.load)
 p.print
-
-# lines.scan(/^(\d{2})\.(\d{2})\.(..) (.*)$/) do |l|
-#   (first, second, third, desc) = l
-#   begin
-#     if first.to_i % 10 == 0
-#       @pacs[first] ||= {} # create sub-hash if needed
-#       @pacs[first][:desc] = desc
-#       next
-#     elsif second.to_i == 0
-#       @pacs[first] ||= {} # create sub-hash if needed
-#       @pacs[first][second] ||= {} # create sub-hash if needed
-#       @pacs[first][second][:desc] = desc
-#       next
-#     else
-#       @pacs[first] ||= {} # create sub-hash if needed
-#       @pacs[first][second] ||= {} # create sub-hash if needed
-#       @pacs[first][second][third] ||= {} # create sub-hash if needed
-# 
-#       if third.match(/^\+/)
-#         # no sub category
-#         @pacs[first][second][third][:desc] = desc
-#       elsif third.match(/^\-/)
-#         # start a sub-section, everything until the next (the lines are sorted accordingly) -?
-#         # third group is in that subgroup
-#         @pacs[first][second][third][third[1]] ||= {}
-#         @pacs[first][second][third][:desc] = desc
-#       end
-# 
-#     end    
-#   rescue Exception => e
-#     puts "Error in line '#{l}': #{e}"
-#   end
-#   
-# end
-# 
-# @pacs.keys.sort{|a,b| a.casecmp(b)}.each do |k|
-#   if @pacs[k][:desc]
-#     # toplevel category
-#     puts "#{k}: #{@pacs[k][:desc]}"
-#   else
-#     @pacs[k].keys.sort{|a,b| a.casecmp(b)}.each do |sk|
-#       if @pacs[k][sk][:desc]
-#         puts "\t#{k}.#{sk}: #{@pacs[k][sk][:desc]}"
-#       else
-#         @pacs[k][sk].keys.sort{|a,b| a.casecmp(b)}.each do |ssk|
-#           puts "\t\t#{k}.#{sk}.#{ssk}: #{@pacs[k][sk][ssk][:desc]}"
-#         end
-#       end
-#     end
-#   end
-# end
