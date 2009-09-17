@@ -12,6 +12,8 @@ PACSFILE = "ASCII2008FullPacs.txt"
 class PACSParser
   PACS = Struct.new(:id, :desc, :children, :comment)
 
+  attr_reader :container
+  
   def initialize
     @container = Array.new
     @current = @parent = nil
@@ -185,3 +187,4 @@ end
 p = PACSParser.new
 p.parse(p.load)
 p.print
+# puts p.container.to_yaml
