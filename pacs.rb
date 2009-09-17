@@ -1,6 +1,11 @@
 #!/usr/bin/env ruby -wKU
 # 
 # parse PACS2008 file and do things with it
+# 
+# (c) Copyright 2009 ISN Oldenburg http://www.isn-oldenburg.de/
+# 
+# Released under the MIT License - see LICENSE
+# 
 require 'open-uri'
 require "strscan"
 require 'yaml'
