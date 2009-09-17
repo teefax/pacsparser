@@ -2,6 +2,8 @@
 # 
 # parse PACS2008 file and do things with it
 # 
+# Author: Eike Bernhardt <bernhardt@isn-oldenburg.de>
+# 
 # (c) Copyright 2009 ISN Oldenburg http://www.isn-oldenburg.de/
 # 
 # Released under the MIT License - see LICENSE
