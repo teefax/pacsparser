@@ -84,7 +84,7 @@ class PACSParser
   end
   
   def print_ruby(pacs, parent = nil)
-    puts "PACS.create!(:pid => '#{pacs.id}', :desc => '#{pacs.desc}', :comment => '#{pacs.comment.nil? ? '' : pacs.comment.join("\n")}', :parent => parent.nil? ? nil : PACS.find_by_pid('#{parent}'))"
+    puts "Pacs.create!(:pid => '#{pacs.id}', :desc => '#{pacs.desc}', :comment => '#{pacs.comment.nil? ? '' : pacs.comment.join("\n")}', :parent => parent.nil? ? nil : PACS.find_by_pid('#{parent}'))"
     if !pacs.children.nil?
       pacs.children.keys.sort{ |a,b| a.to_s.casecmp(b.to_s) }.each do |k|
         print_ruby(pacs.children[k], pacs.id) if !pacs.children[k].nil?
