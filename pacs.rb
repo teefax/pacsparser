@@ -10,11 +10,11 @@
 # 
 require 'open-uri'
 require "strscan"
-require 'yaml'
-require 'pp'
 
 # PACSFILE = "http://www.aip.org/pacs/pacs08/ASCII2008FullPacs.txt"
 PACSFILE = "ASCII2008FullPacs.txt"
+
+MODE="ruby" # see print()
 
 class PACSParser
   PACS = Struct.new(:id, :desc, :children, :comment)
@@ -60,9 +60,12 @@ class PACSParser
   end
   
   def print
-    # puts @container.to_yaml
     @container.each do |i|
-      print_pacs(i) if !i.nil?
+      if MODE == "ruby"
+        print_ruby(i) if !i.nil?
+      else
+        print_pacs(i) if !i.nil?
+      end
     end
   end
   
@@ -76,6 +79,15 @@ class PACSParser
     if !pacs.children.nil?
       pacs.children.keys.sort{ |a,b| a.to_s.casecmp(b.to_s) }.each do |k|
         print_pacs(pacs.children[k], indent+"\t") if !pacs.children[k].nil?
+      end
+    end
+  end
+  
+  def print_ruby(pacs, parent = nil)
+    puts "PACS.create!(:pid => '#{pacs.id}', :desc => '#{pacs.desc}', :comment => '#{pacs.comment.nil? ? '' : pacs.comment.join("\n")}', :parent => parent.nil? ? nil : PACS.find_by_pid('#{parent}'))"
+    if !pacs.children.nil?
+      pacs.children.keys.sort{ |a,b| a.to_s.casecmp(b.to_s) }.each do |k|
+        print_ruby(pacs.children[k], pacs.id) if !pacs.children[k].nil?
       end
     end
   end
