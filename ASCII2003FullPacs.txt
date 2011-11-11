@@ -865,7 +865,7 @@
   33.25.+k   Nuclear resonance and relaxation
   33.35.+r   Electron resonance and relaxation
   33.40.+f   Multiple resonances (including double and higher-order resonance processes, such as double nuclear magnetic resonance, electron double resonance, and microwave optical double resonance)
-  33.45.+x   M?ssbauer spectra
+  33.45.+x   Mössbauer spectra
   33.50.-j   Fluorescence and phosphorescence; radiationless transitions, quenching (intersystem crossing, internal conversion)
   33.50.Dq   Fluorescence and phosphorescence spectra
   33.50.Hv   Radiationless transitions, quenching
@@ -1468,7 +1468,7 @@
   61.14.Qp   X-ray photoelectron diffraction
   61.18.-j   Other methods of structure determination
   61.18.Bn   Atom, molecule, and ion scattering
-  61.18.Fs   Magnetic resonance techniques; M?ssbauer spectroscopy
+  61.18.Fs   Magnetic resonance techniques; Mössbauer spectroscopy
   61.20.-p   Structure of liquids
   61.20.Gy   Theory and models of liquid structure
   61.20.Ja   Computer simulation of liquid structure
@@ -2060,7 +2060,7 @@
   75.75.+a   Magnetic properties of nanostructures
   75.80.+q   Magnetomechanical and magnetoelectric effects, magnetostriction
   75.90.+w   Other topics in magnetic properties and materials (restricted to new topics in section 75)
-  76.        Magnetic resonances and relaxations in condensed matter, M?ssbauer effect
+  76.        Magnetic resonances and relaxations in condensed matter, Mössbauer effect
   76.20.+q   General theory of resonances and relaxations
   76.30.-v   Electron paramagnetic resonance and relaxation
   76.30.Da   Ions and impurities: general
@@ -2085,7 +2085,7 @@
   76.70.Fz   Double nuclear magnetic resonance (DNMR), dynamical nuclear polarization
   76.70.Hb   Optically detected magnetic resonance (ODMR)
   76.75.+i   Muon spin rotation and relaxation
-  76.80.+y   M?ssbauer effect; other gamma-ray spectroscopy
+  76.80.+y   Mössbauer effect; other gamma-ray spectroscopy
   76.90.+d   Other topics in magnetic resonances and relaxations (restricted to new topics in section 76)
   77.        Dielectrics, piezoelectrics, and ferroelectrics and their properties
   77.22.-d   Dielectric properties of solids and liquids
@@ -2457,7 +2457,7 @@
   82.80.-d   Chemical analysis and related physical methods of analysis
   82.80.Bg   Chromatography
   82.80.Dx   Analytical methods involving electronic spectroscopy
-  82.80.Ej   X-ray, M?ssbauer, and other gamma-ray spectroscopic analysis methods
+  82.80.Ej   X-ray, Mössbauer, and other gamma-ray spectroscopic analysis methods
   82.80.Fk   Electrochemical methods
   82.80.Gk   Analytical methods involving vibrational spectroscopy
   82.80.Ha   Analytical methods involving rotational spectroscopy
@@ -2793,7 +2793,7 @@
   87.64.Je   Infrared and Raman spectroscopy
   87.64.Lg   Electron and photoelectron spectroscopy
   87.64.Ni   Optical absorption, magnetic circular dichroism, and fluorescence spectroscopy
-  87.64.Pj   M?ssbauer spectroscopy
+  87.64.Pj   Mössbauer spectroscopy
   87.64.Rr   Light microscopy: bright-field, dark-field, phase contrast, DIC
   87.64.Tt   Confocal microscopy
   87.64.Vv   Multiphoton microscopy
