@@ -1,31 +1,37 @@
 #!/usr/bin/env ruby -wKU
-# 
+#
 # parse PACS2008 file and do things with it
-# 
+#
 # Author: Eike Bernhardt <bernhardt@isn-oldenburg.de>
-# 
+#
 # (c) Copyright 2009 ISN Oldenburg http://www.isn-oldenburg.de/
-# 
+#
 # Released under the MIT License - see LICENSE
-# 
+#
 require 'open-uri'
 require "strscan"
 
 # PACSFILE = "http://www.aip.org/pacs/pacs08/ASCII2008FullPacs.txt"
-PACSFILE = "ASCII2008FullPacs.txt"
+PACSFILE = ARGV[0]
 
-MODE="ruby" # see print()
+MODE=ARGV[1] || "hash" # see print()
+
+if PACSFILE.nil? or PACSFILE.empty?
+  puts "Usage: pacs.rb PACSFILE (MODE)"
+  puts "\tvalid modes: hash, ruby, text"
+  exit 1
+end
 
 class PACSParser
   PACS = Struct.new(:id, :desc, :children, :comment)
 
   attr_reader :container
-  
+
   def initialize
     @container = Array.new
     @current = @parent = nil
   end
-  
+
   def load
     begin
       f = File.open(PACSFILE,'r')
@@ -36,9 +42,9 @@ class PACSParser
       @lines
     rescue Exception => e
       puts "Error loading file: #{e}"
-    end    
+    end
   end
-  
+
   def parse(input)
     @input = StringScanner.new(input)
     begin
@@ -53,24 +59,26 @@ class PACSParser
         ignore
       end
     rescue Exception => e
-      # pp @container
+      ap @container
       puts "Error in line: "+@input[0]
-      raise
+      raise e
     end
   end
-  
+
   def print
     @container.each do |i|
       if MODE == "ruby"
         print_ruby(i) if !i.nil?
+      elsif MODE == "hash"
+        print_hash(i) if !i.nil?
       else
         print_pacs(i) if !i.nil?
       end
     end
   end
-  
+
   def print_pacs(pacs, indent = "")
-    puts "#{indent}#{pacs.id} #{pacs.desc}"
+    puts "#{indent}#{pacs.id} #{pacs.desc}" unless pacs.id.nil? or pacs.id.empty?
     if !pacs.comment.nil?
       pacs.comment.each do |c|
         puts "#{indent} ... ... #{c}"
@@ -82,33 +90,52 @@ class PACSParser
       end
     end
   end
-  
+
   def print_ruby(pacs, parent = nil)
-    puts "Pacs.create!(:pid => '#{pacs.id}', :desc => '#{pacs.desc.gsub(/'/, "\\\\'")}', :comment => '#{pacs.comment.nil? ? '' : pacs.comment.join("\n")}', :parent => #{parent.nil? ? 'nil' : "Pacs.find_by_pid('#{parent}')"})"
+    puts "Pacs.create!(:pid => '#{pacs.id}', :desc => '#{pacs.desc.gsub(/'/, "\\\\'")}', :comment => '#{pacs.comment.nil? ? '' : pacs.comment.join("\n")}', :parent => #{parent.nil? ? 'nil' : "Pacs.find_by_pid('#{parent}')"})"  unless pacs.id.nil? or pacs.id.empty?
     if !pacs.children.nil?
       pacs.children.keys.sort{ |a,b| a.to_s.casecmp(b.to_s) }.each do |k|
         print_ruby(pacs.children[k], pacs.id) if !pacs.children[k].nil?
       end
     end
   end
-  
+
+  def print_hash(pacs, parent = nil)
+    puts "pacs['#{pacs.id}'] = %{#{pacs.desc.strip}}" unless pacs.id.nil? or pacs.id.empty?
+    if !pacs.children.nil?
+      pacs.children.keys.sort{ |a,b| a.to_s.casecmp(b.to_s) }.each do |k|
+        print_hash(pacs.children[k], pacs.id) if !pacs.children[k].nil?
+      end
+    end
+  end
+
   private
-  
+
   def parse_toplevel
     if @input.scan(/(\d0)\.(\d{2})\.(..) (.*)\n/)
       @current_id = "#{@input[1]}.#{@input[2]}.#{@input[3]}"
       @desc = @input[4]
       @container.push( PACS.new(@current_id, @desc, {}) )
       @current = @container.last
+    elsif @input.scan(/(\d0)\.\s{8}(.*)\n/)
+      @current_id = "#{@input[1]}."
+      @desc = @input[2]
+      @container.push( PACS.new(@current_id, @desc, {}) )
+      @current = @container.last
     else
       false
     end
   end
-  
+
   def parse_secondlevel
     if @input.scan(/(\d{2})\.(00)\.(..) (.*)\n/)
       @current_id = "#{@input[1]}.#{@input[2]}.#{@input[3]}"
       @desc = @input[4]
+      @parent = @container[@input[1].to_i/10.round]
+      @current = @parent.children[@current_id] = PACS.new(@current_id, @desc, {})
+    elsif @input.scan(/(\d{2})\.\s{8}(.*)\n/)
+      @current_id = "#{@input[1]}."
+      @desc = @input[2]
       @parent = @container[@input[1].to_i/10.round]
       @current = @parent.children[@current_id] = PACS.new(@current_id, @desc, {})
     else
@@ -121,7 +148,7 @@ class PACSParser
       @current_3rd_lv = @current_id = "#{@input[1]}.#{@input[2]}.#{@input[3]}"
       @desc = @input[4]
       # this might end a subgroup. so re-set parent
-      @parent = @container[@input[1].to_i/10.round].children["#{@input[1]}.00.00"]
+      @parent = @container[@input[1].to_i/10.round].children["#{@input[1]}.00.00"] || @container[@input[1].to_i/10.round].children["#{@input[1]}."]
       @current = @parent.children[@current_id] = PACS.new(@current_id, @desc, {})
     elsif @input.scan(/(\d{2})\.(\d{2})\.(\-.) (.*)\n/) # opening of 4th level group
       @current_3rd_lv = @current_id = "#{@input[1]}.#{@input[2]}.#{@input[3]}"
@@ -133,27 +160,27 @@ class PACSParser
       end
 
       # this might end a subgroup. so re-set parent
-      @parent = @container[@input[1].to_i/10.round].children["#{@input[1]}.00.00"]
+      @parent = @container[@input[1].to_i/10.round].children["#{@input[1]}.00.00"] || @container[@input[1].to_i/10.round].children["#{@input[1]}."]
       @current = @parent = @parent.children[@current_id] = PACS.new(@current_id, @desc, {})
     else
       false
     end
   end
-  
+
   def parse_fourthlevel
     if @input.scan(/(\d{2})\.(\d{2})\.([A-Z][^-]) (.*)\n/) # normal 4th level, just add
       @current_id = "#{@input[1]}.#{@input[2]}.#{@input[3]}"
       @desc = @input[4]
       # this resets parent to level 4
-      @parent = @container[@input[1].to_i/10.round].children["#{@input[1]}.00.00"].children[@current_3rd_lv]
-      
+      @parent = (@container[@input[1].to_i/10.round].children["#{@input[1]}.00.00"] || @container[@input[1].to_i/10.round].children["#{@input[1]}."]).children[@current_3rd_lv]
+
       @current = @parent.children[@current_id] = PACS.new(@current_id, @desc, {})
     elsif @input.scan(/(\d{2})\.(\d{2})\.([A-Z]\-) (.*)\n/) # opening of 5th level group
       @current_id = "#{@input[1]}.#{@input[2]}.#{@input[3]}"
       @desc = @input[4]
       # this resets parent to level 4
-      @parent = @container[@input[1].to_i/10.round].children["#{@input[1]}.00.00"].children[@current_3rd_lv]
-      
+      @parent = (@container[@input[1].to_i/10.round].children["#{@input[1]}.00.00"] || @container[@input[1].to_i/10.round].children["#{@input[1]}."]).children[@current_3rd_lv]
+
       @current = @parent = @parent.children[@current_id] = PACS.new(@current_id, @desc, {})
     else
       false
@@ -169,7 +196,7 @@ class PACSParser
       false
     end
   end
-    
+
   def parse_comment
     if @input.scan(/\.\.\. \.\.\. (.*)\n/)
       # found a comment, append this to @current element
@@ -180,19 +207,19 @@ class PACSParser
       false
     end
   end
-  
+
   def ignore
-    if !@input.check(/..\...\... .*\n/) and !@input.check(/ \.{3} \.{3} .*\n/) and @input.scan(/(.*)\n/)
+    if !@input.check(/..\...\... .*\n/) and !@input.check(/ \.{3} \.{3} .*\n/) and !@input.check(/\d{2}\.\s{8}.*\n/) and @input.scan(/(.*)\n/)
       STDERR.puts "Ignoring '#{@input[1]}'"
     else
       false
     end
   end
-  
+
   def trim_space
     @input.scan(/\s+/)
   end
-  
+
   def error(message)
     if @input.eos?
       raise "Unexpected end of input."
